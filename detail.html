@@ -10,7 +10,7 @@
     <div class="container">
         <h1>
             <a href="index.html">Retour</a>
-            <strong id="org"></strong>
+            Détails:<strong id="org"></strong>
         </h1>
         <ul class="item-list" id="liste">
             <div class="spinner"></div>
@@ -19,35 +19,19 @@
     <script type="module" src="firebase.js"></script>
     <script type="module">
         import {
-            addDocument,
-            getDocuments,
-            updateDocument,
-            deleteDocument,
-            addDocumentWithId,
-            addArrayFieldToDocument,
-            getAllDocumentsFromCollection,
             getDocumentValue
         } from './firebase.js'
 
-        const listeContenair = document.getElementById("liste")
-        const orgTitle = document.getElementById('org')
-        //Recuperation de L'url
-        const url = new URL(window.location.href);
-        const params = new URLSearchParams(url.search);
-        const param1 = params.get('ref');
-        
-        if(param1!= undefined){
-            
-            orgTitle.innerHTML=param1
-            const infos = await getDocumentValue(param1)
+        async function getDataListe(list, data) {
+            const infos = await getDocumentValue(data)
             if(infos.liste.length>0){
                 
-                listeContenair.innerHTML=''
+                list.innerHTML='<spinner class="spinner"></span>'
                 let plain = ''
                 infos.liste.forEach(itm=>{
 
                     let line = `
-                    <li>
+                    <li id="${itm.id}">
                         <span class="name">${itm.name}</span>
                         <span class="tag">${itm.role}</span>
                         <span class="status ${(itm.state==true)?'online':'offline'}">
@@ -62,12 +46,52 @@
                     plain=plain+''+line
                 })
 
-                listeContenair.innerHTML=plain
+                list.innerHTML=plain
             }else{
 
-                listeContenair.innerHTML='<h3 style="text-align:center;padding:20px 0;">Cette Organisation ne contient personne !</h3>'
+                list.innerHTML='<h3 style="text-align:center;padding:20px 0;">Cette Organisation ne contient personne !</h3>'
+            }
+        }
+
+        async function updateState(list,param1){
+
+            const infos = await getDocumentValue(param1)
+            if(infos.liste.length>0){
+
+                infos.liste.forEach(itm=>{
+                    let target = document.getElementById(itm.id)
+                    if(target != null){
+                        let state = target.querySelector('.status')
+                        if(itm.state == true){
+                            state.classList.remove('offline')
+                            state.classList.add('online')
+                            state.innerHTML='Present'
+                            
+                        }else{
+                            state.classList.remove('online')
+                            state.classList.add('offline')
+                            state.innerHTML='Pas Present'
+                        }
+                    }   
+                })
             }
 
+        }
+        const listeContenair = document.getElementById("liste")
+        const orgTitle = document.getElementById('org')
+        //Recuperation de L'url
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+        const param1 = params.get('ref');
+        
+        if(param1!= undefined){
+            
+            orgTitle.innerHTML=param1
+            getDataListe(listeContenair, param1)
+            setInterval(() => {
+                updateState(listeContenair, param1)
+            }, 1000);
+            
         }else{
 
             window.location.href="index.html"
