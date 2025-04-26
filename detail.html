@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <a href="index.html">Retour</a>
+            Détails:<strong id="org"></strong>
+        </h1>
+        <ul class="item-list" id="liste">
+            <div class="spinner"></div>
+        </ul>
+    </div>
+    <script type="module" src="firebase.js"></script>
+    <script type="module">
+        import {
+            addDocument,
+            getDocuments,
+            updateDocument,
+            deleteDocument,
+            addDocumentWithId,
+            addArrayFieldToDocument,
+            getAllDocumentsFromCollection,
+            getDocumentValue
+        } from './firebase.js'
+
+        const listeContenair = document.getElementById("liste")
+        const orgTitle = document.getElementById('org')
+        //Recuperation de L'url
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+        const param1 = params.get('ref');
+        
+        if(param1!= undefined){
+            
+            orgTitle.innerHTML=param1
+            const infos = await getDocumentValue(param1)
+            if(infos.liste.length>0){
+                
+                listeContenair.innerHTML=''
+                let plain = ''
+                infos.liste.forEach(itm=>{
+
+                    let line = `
+                    <li>
+                        <span class="name">${itm.name}</span>
+                        <span class="tag">${itm.role}</span>
+                        <span class="status ${(itm.state==true)?'online':'offline'}">
+                            ${(itm.state==true)?'Present':'Pas Present'}
+                        </span>
+                        <div class="dropbox">
+                            <p>Heure d'arrivée:${(itm.arriver == undefined)?"-":itm.arriver}</p>
+                            <p>Heure de sortie:${(itm.sortie == undefined)?"-":itm.sortie}</p>
+                        </div>
+                    </li>
+                    `
+                    plain=plain+''+line
+                })
+
+                listeContenair.innerHTML=plain
+            }else{
+
+                listeContenair.innerHTML='<h3 style="text-align:center;padding:20px 0;">Cette Organisation ne contient personne !</h3>'
+            }
+
+        }else{
+
+            window.location.href="index.html"
+        }
+
+    </script>
+</body>
+</html>
