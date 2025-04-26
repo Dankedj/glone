@@ -86,7 +86,7 @@
         
         if(param1!= undefined){
             
-            orgTitle.innerHTML=''+param1.toUpperCase()
+            orgTitle.innerHTML=''+param1.toLocaleUpperCase()
             getDataListe(listeContenair, param1)
             setInterval(() => {
                 updateState(listeContenair, param1)
